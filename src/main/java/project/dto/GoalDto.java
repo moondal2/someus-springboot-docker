@@ -9,5 +9,5 @@ public class GoalDto {
 	private String memberId;
 	private String goalContents;
 	private String goalDate;
-	private String acheiveYn;
+	private String goalState;
 }

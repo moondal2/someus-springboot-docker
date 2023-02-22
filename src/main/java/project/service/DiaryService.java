@@ -3,6 +3,7 @@ package project.service;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.ibatis.annotations.Param;
 import org.springframework.web.multipart.MultipartFile;
 
 import project.dto.DiaryDto;
@@ -16,9 +17,6 @@ public interface DiaryService {
 	
 	// 1. 개인 일기 목록 조회
 	public List<DiaryDto> selectPrivateList(String memberId) throws Exception;
-	public List<GoalDto> selectGoalList(String memberId) throws Exception;
-	public int insertGoal(GoalDto goaldto) throws Exception;
-	public int updateGoal(String memberId) throws Exception;
 	
 	// 1-1. 날짜별 개인 일기 목록 조회
 	public List<DiaryDto> selectPrivateListByDt(String memberId, String createdDt) throws Exception;
@@ -54,20 +52,20 @@ public interface DiaryService {
 	// 11. 교환 일기 상세 조회
 	public List<DiaryDto> selectPublicDetail(int shareRoomId, String createdDt) throws Exception;
 	
-//	// 교환 일기 수정
-//	public int updatePublic(DiaryDto diaryDto) throws Exception;
-	
-//	public int deletePublic(int shareRoomId, int diaryId) throws Exception;
-////	
-//	public int deletePublic(DiaryDto diaryDto) throws Exception;
-	
-	public List<GoalDto> selectGoalList() throws Exception;
-	
 	// 12. 교환 일기 그룹 추가
 	int addGroup(ShareRoomDto shareRoomDto) throws Exception;
 	
 	// 13. 교환 일기 멤버 추가
 	public int addGroupNext(ShareMemberDto shareMemberDto) throws Exception;
 	
+	// 17. 개인 목표 목록 조회
+	public List<GoalDto> selectGoalList(@Param("memberId")String memberId, @Param("goalDate")String goalDate) throws Exception;
+	 
+	// 18. 개인 목표 쓰기
+	public int insertGoal(GoalDto goalDto) throws Exception;
+	 
+	// 19. 개인 목표 수정
+	public int updateGoal(GoalDto goalDto) throws Exception;
+
 	
 }

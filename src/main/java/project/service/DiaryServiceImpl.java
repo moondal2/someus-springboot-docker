@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import lombok.extern.slf4j.Slf4j;
 import project.dto.DiaryDto;
@@ -34,22 +33,6 @@ public class DiaryServiceImpl implements DiaryService {
 	public List<DiaryDto> selectPrivateListByDt(String memberId, String createdDt) throws Exception {
 		return diaryMapper.selectPrivateListByDt(memberId, createdDt);
 	}
-
-	
-	@Override
-	public List<GoalDto> selectGoalList(String memberId) throws Exception {
-		return diaryMapper.selectGoalList(memberId);
-	}
-	
-	@Override
-	public int insertGoal(GoalDto goalDto) throws Exception {
-		return diaryMapper.insertGoal(goalDto);
-	}
-	
-	@Override
-	public int updateGoal(String memberId) throws Exception {
-		return diaryMapper.updateGoal(memberId);
-	}
 	
 	// 2, 9. 개인/교환 일기 작성 화면 - 기분, 날씨 선택
 	public List<WeatherDto> weatherList() throws Exception {
@@ -74,25 +57,25 @@ public class DiaryServiceImpl implements DiaryService {
 	
 	// 5. 개인 일기 수정
 	@Override
-	public int updatePrivate(DiaryDto diaryDto) throws Exception{
+	public int updatePrivate(DiaryDto diaryDto) throws Exception {
 		return diaryMapper.updatePrivate(diaryDto);
 	}
 	
 	// 6. 개인 일기 삭제
 	@Override
-	public int deletePrivate(int diaryId) throws Exception{
+	public int deletePrivate(int diaryId) throws Exception {
 		return diaryMapper.deletePrivate(diaryId);
 	}
 	
 	// 7. 교환 일기 그룹 목록 조회
 	@Override
-	public List<ShareRoomDto> selectPublicList() throws Exception{
+	public List<ShareRoomDto> selectPublicList() throws Exception {
 		return diaryMapper.selectPublicList();
 	}
 	
 	// 8. 교환 일기 목록 조회
 	@Override
-	public List<Map<String, Object>> selectPublicShareList(int shareRoomId) throws Exception{
+	public List<Map<String, Object>> selectPublicShareList(int shareRoomId) throws Exception {
 		return diaryMapper.selectPublicShareList(shareRoomId);
 	}
 	
@@ -114,26 +97,6 @@ public class DiaryServiceImpl implements DiaryService {
 		return diaryMapper.selectPublicDetail(shareRoomId, createdDt);
 	}
 	
-//	@Override
-//	public int updatePublic(DiaryDto diaryDto) throws Exception{
-//		return diaryMapper.updatePublic(diaryDto);
-//	}
-	
-//	@Override
-//	public int deletePublic(int shareRoomId, int diaryId) throws Exception{
-//		return diaryMapper.deletePublic(shareRoomId, diaryId);
-//	}
-	
-//	@Override
-//	public int deletePublic(DiaryDto diaryDto) throws Exception{
-//		return diaryMapper.deletePublic(diaryDto);
-//	}
-	
-	@Override
-	public List<GoalDto> selectGoalList() throws Exception {
-		return diaryMapper.selectGoalList();
-	}
-
 	// 12. 교환 일기 그룹 추가
 	@Override
 	public int addGroup(ShareRoomDto shareRoomDto) throws Exception {
@@ -146,4 +109,26 @@ public class DiaryServiceImpl implements DiaryService {
 		return diaryMapper.addGroupNext(shareMemberDto);
 	}
 	
+	// 17. 목표 조회
+	@Override
+	public List<GoalDto> selectGoalList(String memberId, String goalDate) throws Exception {
+		return diaryMapper.selectGoalList(memberId, goalDate);
+	}
+
+	// 18. 목표 입력
+	@Override
+	public int insertGoal(GoalDto goalDto) throws Exception {
+		return diaryMapper.insertGoal(goalDto);
+	}
+
+	// 19. 목표 업데이트
+	@Override
+	public int updateGoal(GoalDto goalDto) throws Exception {
+		return diaryMapper.updateGoal(goalDto);			
+	}
+	
+//	@Override
+//	public int updateGoal(GoalDto goalDto) throws Exception {
+//		return diaryMapper.updateGoal(goalDto);
+//	}
 }

@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -64,12 +65,10 @@ public class DiaryApiController {
 
 		Map<String, Object> result = new HashMap<>();
 		List<DiaryDto> list1 = diaryService.selectPrivateList(memberId);
-		List<GoalDto> list2 = diaryService.selectGoalList(memberId);
 
 		result.put("diaryList", list1);
-		result.put("goalList", list2);
 
-		if (result.size() == 2) {
+		if (result.size() == 1) {
 			return ResponseEntity.status(HttpStatus.OK).body(result);
 		} else {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
@@ -90,11 +89,8 @@ public class DiaryApiController {
 		} else {
 			return ResponseEntity.status(HttpStatus.OK).body(list);
 		}
-		
 	}
 	
-	
-
 	// 2. 개인 일기 작성 화면 요청
 	@GetMapping("api/someus/private/write")
 	public ResponseEntity<Map<String, Object>> writePrivate() throws Exception {
@@ -225,13 +221,14 @@ public class DiaryApiController {
 		} else {
 			return ResponseEntity.status(HttpStatus.OK).body(updatedCount);
 		}
-
 	}
 
 	// 6. 개인 일기 삭제
 	@DeleteMapping("/api/someus/private/{diaryId}")
 	public ResponseEntity<Integer> deletePrivate(@PathVariable("diaryId") int diaryId) throws Exception {
+		
 		int deletedCount = diaryService.deletePrivate(diaryId);
+		
 		if (deletedCount != 1) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(deletedCount);
 		} else {
@@ -244,6 +241,7 @@ public class DiaryApiController {
 	public ResponseEntity<List<ShareRoomDto>> openGroupList() throws Exception {
 
 		List<ShareRoomDto> list = diaryService.selectPublicList();
+		
 		if (list != null && list.size() > 0) {
 			return ResponseEntity.status(HttpStatus.OK).body(list);
 		} else {
@@ -283,7 +281,7 @@ public class DiaryApiController {
 
 	// 9. 교환 일기 작성 화면 요청
 	@GetMapping("api/someus/share/{shareRoomId}/write")
-	public ResponseEntity<Map<String, Object>> writePublic(@PathVariable("shareRoomId") int shareRoomId) throws Exception {
+	public ResponseEntity<Map<String, Object>> writePublic(@PathVariable("shareRoomId") String shareRoomId) throws Exception {
 
 		Map<String, Object> result = new HashMap<>();
 		List<WeatherDto> weatherList = diaryService.weatherList();
@@ -302,7 +300,7 @@ public class DiaryApiController {
 	// 10. 교환 일기 작성
 	@PostMapping("/api/someus/share/{shareRoomId}/write")
 	public ResponseEntity<Map<String, Object>> insertPublic(
-			@PathVariable("shareRoomId") int shareRoomId,
+			@PathVariable("shareRoomId") String shareRoomId,
 			@RequestPart(value = "files", required = false) MultipartFile[] files,
 			@RequestPart(value = "data", required = false) DiaryDto diaryDto, HttpServletRequest request)
 			throws Exception {
@@ -310,13 +308,12 @@ public class DiaryApiController {
 		String jwtToken = null;
 		String subject = null;
 		String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+		
 		if (authorizationHeader != null && authorizationHeader.startsWith("Bearer")) {
 			jwtToken = authorizationHeader.substring(7);
 			subject = jwtTokenUtil.getSubjectFromToken(jwtToken);
 		}
-		diaryDto.setMemberId(subject);
-		diaryDto.setShareRoomId(shareRoomId);
-
+		
 		String FileNames = "";
 		int insertedCount = 0;
 
@@ -341,6 +338,8 @@ public class DiaryApiController {
 			}
 			
 			insertedCount = diaryService.insertPublic(diaryDto);
+			diaryDto.setMemberId(subject);
+			diaryDto.setShareRoomId(Integer.parseInt(shareRoomId));
 			if (insertedCount > 0) {
 				Map<String, Object> result = new HashMap<>();
 				result.put("message", "정상적으로 등록되었습니다.");
@@ -367,7 +366,6 @@ public class DiaryApiController {
 
 		int shareRoomId = Integer.parseInt(val.get("shareRoomId"));
 		String createdDt = val.get("createdDt");
-
 		List<DiaryDto> list = diaryService.selectPublicDetail(shareRoomId, createdDt);
 
 		if (list != null) {
@@ -377,29 +375,12 @@ public class DiaryApiController {
 		}
 	}
 
-//	// 교환 일기 수정
-//	@PutMapping("/api/someus/share/{shareRoomId}/{createdDt}")
-//	public ResponseEntity<Integer> updatePublic(@PathVariable("shareRoomId") int shareRoomId,
-//			@PathVariable("createdDt") String createdDt, @RequestBody DiaryDto diaryDto) throws Exception {
-//		diaryDto.setCreatedDt(createdDt);
-//		diaryDto.setShareRoomId(shareRoomId);
-//
-//		log.debug(">>>>>>>>>>>>>>>>>");
-//		log.debug(diaryDto.toString());
-//
-//		int updatedCount = diaryService.updatePublic(diaryDto);
-//		if (updatedCount != 1) {
-//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(updatedCount);
-//		} else {
-//			return ResponseEntity.status(HttpStatus.OK).body(updatedCount);
-//		}
-//	}
-
 	// 12. 교환 일기 목록 추가
 	@PostMapping("/api/someus/addgroup")
 	public ResponseEntity<Integer> addGroup(@RequestBody ShareRoomDto shareRoomDto) throws Exception {
 
 		int insertGroupCount = diaryService.addGroup(shareRoomDto);
+		
 		if (insertGroupCount != 1) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(insertGroupCount);
 		} else {
@@ -410,6 +391,7 @@ public class DiaryApiController {
 	// 13. 교환 일기 멤버 추가
 	@PostMapping("/api/someus/addgroupnext")
 	public ResponseEntity<Integer> addGroupNext(@RequestBody ShareMemberDto shareMemberDto) throws Exception {
+		
 		int insertMemberCount = diaryService.addGroupNext(shareMemberDto);
 		
 		if (insertMemberCount != 1) {
@@ -420,5 +402,51 @@ public class DiaryApiController {
 	}
 
 	// 14. 개인/그룹 선택 화면
-
+	
+	
+	// 17. 개인 목표 목록 조회
+	@GetMapping("/api/somemus/private/goal")
+	public ResponseEntity<List<GoalDto>> selectGoalList(
+			@RequestParam (value="goalDate") String goalDate,
+			@RequestParam (value="memberId") String memberId) throws Exception {
+		
+		List<GoalDto> list = diaryService.selectGoalList(memberId, goalDate);
+		
+		if (list.size() > 0) {
+			return ResponseEntity.status(HttpStatus.OK).body(list);
+		} else {
+			return ResponseEntity.status(HttpStatus.OK).body(list);
+		}
+	}
+	
+	// 18. 개인 목표 쓰기
+	@PostMapping("/api/someus/private/goal")
+	public ResponseEntity<Integer> insertGoal(
+			@RequestBody GoalDto goalDto) throws Exception {
+		
+		int insertCount = diaryService.insertGoal(goalDto);
+		
+		if (insertCount != 0) {
+			return ResponseEntity.status(HttpStatus.OK).body(insertCount);
+		} else {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+		}
+	}
+	
+	// 19. 개인 목표 수정
+	@PostMapping("/api/someus/private/goal/{goalId}")
+	public ResponseEntity<Integer> updateGoal(
+			@PathVariable("goalId") int goalId,
+			@RequestBody GoalDto goalDto) throws Exception {
+		
+		goalDto.setGoalId(goalId);
+		int updateCount = diaryService.updateGoal(goalDto);
+		
+		if (updateCount != 0) {
+			return ResponseEntity.status(HttpStatus.OK).body(updateCount);
+		} else {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+		}
+	}
+	
 }

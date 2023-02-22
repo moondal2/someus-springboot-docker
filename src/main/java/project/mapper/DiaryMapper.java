@@ -18,9 +18,6 @@ public interface DiaryMapper {
 
 	// 1. 개인 일기 목록 조회
 	 List<DiaryDto> selectPrivateList(String memberId) throws Exception;
-	 List<GoalDto> selectGoalList(String memberId) throws Exception;
-	 int insertGoal(GoalDto goalDto) throws Exception;
-	 int updateGoal(String memberId) throws Exception;
 	 
 	 // 1-1. 날짜별 개인 일기 목록 조회
 	 public List<DiaryDto> selectPrivateListByDt(String memberId, String createdDt) throws Exception;
@@ -56,21 +53,20 @@ public interface DiaryMapper {
 	 // 11. 교환 일기 상세 조회
 	 List<DiaryDto> selectPublicDetail(@Param("shareRoomId") int shareRoomId, @Param("createdDt") String createdDt) throws Exception;
 	 
-	 //	 int updatePublic(DiaryDto diaryDto) throws Exception;
-	 
-	 // int deletePublic(@Param("shareRoomId") int shareRoomId, @Param("diaryId") int diaryId) throws Exception;
-
-	 //	 int deletePublic(DiaryDto diaryDto) throws Exception;
-	 
-	 
-	 List<GoalDto> selectGoalList() throws Exception;
-	 
 	 // 12. 교환 일기 그룹 추가
 	 int addGroup(ShareRoomDto shareRoomDto) throws Exception;
 	
 	 // 13. 교환 일기 멤버 추가
 	 int addGroupNext(ShareMemberDto shareMemberDto);
 
+	 // 17. 개인 목표 목록 조회
+	 List<GoalDto> selectGoalList(@Param("memberId")String memberId, @Param("goalDate")String goalDate) throws Exception;
+	 
+	 // 18. 개인 목표 쓰기
+	 int insertGoal(GoalDto goalDto) throws Exception;
+	 
+	 // 19. 개인 목표 수정
+	 int updateGoal(GoalDto goalDto) throws Exception;
 	
 	 
 }
