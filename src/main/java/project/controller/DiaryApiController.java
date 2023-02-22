@@ -1,10 +1,15 @@
 package project.controller;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -16,11 +21,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import io.jsonwebtoken.io.IOException;
 import lombok.extern.slf4j.Slf4j;
 import project.dto.DiaryDto;
 import project.dto.GoalDto;
+import project.dto.MemberDto;
 import project.dto.MoodDto;
 import project.dto.ShareMemberDto;
 import project.dto.ShareRoomDto;
@@ -36,153 +45,176 @@ public class DiaryApiController {
 
 	@Autowired
 	private JwtTokenUtil jwtTokenUtil;
+	
+	private DiaryDto diaryDto;
+	private MemberDto memberDto;
+	private ShareMemberDto shareMemberDto;
+	private ShareRoomDto shareRoomDto;
 
-//	@PostMapping("/api/regist")
-//	public ResponseEntity<Object> regist(@RequestBody MemberDto memberDto) throws Exception {
-//		int registedCount = loginService.registUser(memberDto);
-//		if (registedCount > 0) {
-//			return ResponseEntity.status(HttpStatus.CREATED).body(registedCount);
-//		} else {
-//			return ResponseEntity.status(HttpStatus.OK).body(registedCount);
-//		}
-//	}
+	final String UPLOAD_PATH = "C:/java/eclipse-workspace/someus/src/main/resources/static/img/";
 
+	
+	@GetMapping("/api/someus/mainpage")
+	public void openMainPage() throws Exception {}
+	
+	// 1. 개인 일기 목록 조회
 	@GetMapping("/api/someus/private/page/{memberId}")
-	public ResponseEntity <Map<String, Object>> openPrivateList(@PathVariable ("memberId") String memberId) throws Exception {
-		
-		Map <String, Object> result = new HashMap<>();
+	public ResponseEntity<Map<String, Object>> openPrivateList(@PathVariable("memberId") String memberId)
+			throws Exception {
+
+		Map<String, Object> result = new HashMap<>();
 		List<DiaryDto> list1 = diaryService.selectPrivateList(memberId);
 		List<GoalDto> list2 = diaryService.selectGoalList(memberId);
-		
+
 		result.put("diaryList", list1);
 		result.put("goalList", list2);
-		
-//		result.containsKey("diaryList") == true && result.containsKey("goalList") == true
+
 		if (result.size() == 2) {
 			return ResponseEntity.status(HttpStatus.OK).body(result);
 		} else {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 		}
+	}
+	
+	// 1-1. 날짜별 개인 일기 목록 조회
+	@GetMapping("/api/someus/private/page/{memberId}/{createdDt}")
+	public ResponseEntity<List<DiaryDto>> openPrivateListByDt(
+			@PathVariable("memberId") String memberId,
+			@PathVariable("createdDt") String createdDt)
+			throws Exception {
+
+		List<DiaryDto> list = diaryService.selectPrivateListByDt(memberId, createdDt);
+		
+		if(list != null) {
+			return ResponseEntity.status(HttpStatus.OK).body(list);
+		} else {
+			return ResponseEntity.status(HttpStatus.OK).body(list);
+		}
 		
 	}
-//	
-//	@GetMapping("/api/someus/private")
-//	public ResponseEntity<List<GoalDto>> openGoalList() throws Exception {
-//		List<GoalDto> list = diaryService.selectGoalList();
-//		if (list != null && list.size() > 0) {
-//			return ResponseEntity.status(HttpStatus.OK).body(list);
-//		} else {
-//			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-//		}
-//	}
 	
-	// 글쓰기 화면 요청 시 날씨, 기분 선택 넘기기 위함
+	
+
+	// 2. 개인 일기 작성 화면 요청
 	@GetMapping("api/someus/private/write")
-	public ResponseEntity<Map<String, Object>> writePrivate() throws Exception{
-		
+	public ResponseEntity<Map<String, Object>> writePrivate() throws Exception {
+
 		Map<String, Object> result = new HashMap<>();
 		List<WeatherDto> weatherList = diaryService.weatherList();
 		List<MoodDto> moodList = diaryService.moodList();
-		
+
 		result.put("weatherList", weatherList);
 		result.put("moodList", moodList);
-		
-		if (weatherList != null && moodList !=null) {
+
+		if (weatherList != null && moodList != null) {
 			return ResponseEntity.status(HttpStatus.OK).body(result);
 		} else {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 		}
 	}
 
-//	@PostMapping("/api/someus/private/write")
-//	public ResponseEntity<Map<String, Object>> insertPrivate(@RequestPart(value = "files", required = false) MultipartFile file, @RequestPart(value = "data", required = false) DiaryDto diaryDto, HttpServletRequest request)
-//			throws Exception {
-//		String jwtToken = null;
-//		String subject = null;
-//		String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-//		if (authorizationHeader != null && authorizationHeader.startsWith("Bearer")) {
-//			jwtToken = authorizationHeader.substring(7);
-//			subject = jwtTokenUtil.getSubjectFromToken(jwtToken);
-//		}
-//		diaryDto.setMemberId(subject);
-//		
-//		String FileNames = "";
-//		String filepath = "C:/java/eclipse-workspace/someus/img";
-//		String returnFileName="";
-//		
-//		String originFileName = file.getOriginalFilename(); // 원본 파일 명
-//		long fileSize = file.getSize(); // 파일 사이즈
-//
-//		System.out.println("originFileName : " + originFileName);
-//		System.out.println("fileSize : " + fileSize);
-//		String safeFile = System.currentTimeMillis() + originFileName;
-//		returnFileName = safeFile.toString();
-//
-//		diaryDto.setDiaryImg(returnFileName);
-//		
-//		int insertedCount = 0;
-//		
-//		try {
-//			insertedCount = diaryService.insertPrivate(diaryDto, file);
-//			if (insertedCount > 0) {
-//				Map<String, Object> result = new HashMap<>();
-//				result.put("message", "정상적으로 등록되었습니다.");
-//				result.put("count", insertedCount);
-//				result.put("diaryId", diaryDto.getDiaryId());
-//				return ResponseEntity.status(HttpStatus.OK).body(result);
-//			} else {
-//				Map<String, Object> result = new HashMap<>();
-//				result.put("message", "등록된 내용이 없습니다.");
-//				result.put("count", insertedCount);
-//				return ResponseEntity.status(HttpStatus.OK).body(result);
-//			}
-//		} catch (Exception e) {
-//			Map<String, Object> result = new HashMap<>();
-//			result.put("message", "등록 중 오류가 발생했습니다.");
-//			result.put("count", insertedCount);
-//			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
-//		}
-//		return null;
-//		
-//	}
+	// 3. 개인 일기 작성
+	@PostMapping("/api/someus/private/write")
+	public ResponseEntity<Map<String, Object>> insertPrivate(
+			@RequestPart(value = "files", required = false) MultipartFile[] files,
+			@RequestPart(value = "data", required = false) DiaryDto diaryDto, HttpServletRequest request)
+			throws Exception {
 
-		
-		
-		
-//		int insertedCount = 0;
-//		try {
-//			insertedCount = diaryService.insertPrivate(diaryDto, mf);
-//			if (insertedCount > 0) {
-//				Map<String, Object> result = new HashMap<>();
-//				result.put("message", "정상적으로 등록되었습니다.");
-//				result.put("count", insertedCount);
-//				result.put("diaryId", diaryDto.getDiaryId());
-//				return ResponseEntity.status(HttpStatus.OK).body(result);
-//			} else {
-//				Map<String, Object> result = new HashMap<>();
-//				result.put("message", "등록된 내용이 없습니다.");
-//				result.put("count", insertedCount);
-//				return ResponseEntity.status(HttpStatus.OK).body(result);
-//			}
-//		} catch (Exception e) {
-//			Map<String, Object> result = new HashMap<>();
-//			result.put("message", "등록 중 오류가 발생했습니다.");
-//			result.put("count", insertedCount);
-//			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
-//		}
-//	}}
+		String jwtToken = null;
+		String subject = null;
+		String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+		if (authorizationHeader != null && authorizationHeader.startsWith("Bearer")) {
+			jwtToken = authorizationHeader.substring(7);
+			subject = jwtTokenUtil.getSubjectFromToken(jwtToken);
+		}
+		diaryDto.setMemberId(subject);
+		log.debug(">>>>>>>>>>>>>>>>>>" + diaryDto.toString());
 
+		String FileNames = "";
+		int insertedCount = 0;
+
+		try {
+			for (MultipartFile mf : files) {
+				String originFileName = mf.getOriginalFilename(); // 원본 파일 명
+				long fileSize = mf.getSize(); // 파일 사이즈
+
+				System.out.println("originFileName : " + originFileName);
+				System.out.println("fileSize : " + fileSize);
+				String safeFile = System.currentTimeMillis() + originFileName;
+				diaryDto.setDiaryImg(safeFile);
+
+				try {
+					File f1 = new File(UPLOAD_PATH + safeFile);
+					mf.transferTo(f1);
+				} catch (IllegalStateException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+
+			insertedCount = diaryService.insertPrivate(diaryDto);
+			if (insertedCount > 0) {
+				Map<String, Object> result = new HashMap<>();
+				result.put("message", "정상적으로 등록되었습니다.");
+				result.put("count", insertedCount);
+				result.put("diaryId", diaryDto.getDiaryId());
+				return ResponseEntity.status(HttpStatus.OK).body(result);
+			} else {
+				Map<String, Object> result = new HashMap<>();
+				result.put("message", "등록된 내용이 없습니다.");
+				result.put("count", insertedCount);
+				return ResponseEntity.status(HttpStatus.OK).body(result);
+			}
+		} catch (Exception e) {
+			Map<String, Object> result = new HashMap<>();
+			result.put("message", "등록 중 오류가 발생했습니다.");
+			result.put("count", insertedCount);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
+		}
+	}
+
+	// 다이어리 이미지 다운로드
+	@GetMapping("/api/getImage/{diaryImg}")
+	public void getImage(@PathVariable("diaryImg") String diaryImg, HttpServletResponse response) throws Exception {
+		// reviewImage를 읽어서 전달
+		FileInputStream fis = null;
+		BufferedInputStream bis = null;
+		BufferedOutputStream bos = null;
+
+		try {
+			response.setHeader("Content-Disposition", "inline;");
+
+			byte[] buf = new byte[1024];
+			fis = new FileInputStream(UPLOAD_PATH + diaryImg);
+			bis = new BufferedInputStream(fis);
+			bos = new BufferedOutputStream(response.getOutputStream());
+			int read;
+			while ((read = bis.read(buf, 0, 1024)) != -1) {
+				bos.write(buf, 0, read);
+			}
+		} finally {
+			bos.close();
+			bis.close();
+			fis.close();
+		}
+	}
+
+	// 4. 개인 일기 상세 조회
 	@GetMapping("/api/someus/private/{diaryId}")
-	public ResponseEntity<DiaryDto> openPrivateDetail(@PathVariable("diaryId") int diaryId) throws Exception {
+	public ResponseEntity<DiaryDto> openPrivateDetail(@PathVariable("diaryId") int diaryId,
+			HttpServletResponse response) throws Exception {
 		DiaryDto diaryDto = diaryService.selectPrivateDetail(diaryId);
+		String diaryImg = diaryDto.getDiaryImg();
+
 		if (diaryDto == null) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 		} else {
 			return ResponseEntity.status(HttpStatus.OK).body(diaryDto);
 		}
-
 	}
 
+	// 5. 개인 일기 수정
 	@PutMapping("/api/someus/private/{diaryId}")
 	public ResponseEntity<Integer> updatePrivate(@PathVariable("diaryId") int diaryId, @RequestBody DiaryDto diaryDto)
 			throws Exception {
@@ -196,6 +228,7 @@ public class DiaryApiController {
 
 	}
 
+	// 6. 개인 일기 삭제
 	@DeleteMapping("/api/someus/private/{diaryId}")
 	public ResponseEntity<Integer> deletePrivate(@PathVariable("diaryId") int diaryId) throws Exception {
 		int deletedCount = diaryService.deletePrivate(diaryId);
@@ -206,10 +239,7 @@ public class DiaryApiController {
 		}
 	}
 
-	// 개인 목표 기능
-
-	// 교환 일기 기능
-
+	// 7. 교환 일기 그룹 목록 조회
 	@GetMapping("/api/someus/share/grouplist")
 	public ResponseEntity<List<ShareRoomDto>> openGroupList() throws Exception {
 
@@ -220,38 +250,63 @@ public class DiaryApiController {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 		}
 	}
-
-	@GetMapping("/api/someus/share/groupsharelist")
-	public ResponseEntity<List<ShareMemberDto>> openGroupShareList() throws Exception {
-
-		List<ShareMemberDto> list = diaryService.selectPublicShareList();
-		if (list != null && list.size() > 0) {
-			return ResponseEntity.status(HttpStatus.OK).body(list);
-		} else {
+	
+	// 8. 교환 일기 목록 조회
+	@GetMapping("/api/someus/shareroom/{shareRoomId}")
+	public ResponseEntity<List<Map<String, Object>>> openPublicDetail(@PathVariable("shareRoomId") int shareRoomId)
+			throws Exception {
+		
+		List<Map<String, Object>> result = diaryService.selectPublicShareList(shareRoomId);
+		
+		if (result == null) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+		} else {
+			return ResponseEntity.status(HttpStatus.OK).body(result);
+		}
+	}
+	
+	// 8-1. 날짜별 교환 일기 목록 조회
+	@GetMapping("/api/someus/shareroom/{shareRoomId}/{createdDt}")
+	public ResponseEntity<List<Map<Object, Object>>> selectPublicShareListByDt(
+			@PathVariable("shareRoomId") int shareRoomId,
+			@PathVariable("createdDt") String createdDt)
+			throws Exception {
+
+		List<Map<Object, Object>> result = diaryService.selectPublicShareListByDt(shareRoomId, createdDt);
+		
+		if(result != null) {
+			return ResponseEntity.status(HttpStatus.OK).body(result);
+		} else {
+			return ResponseEntity.status(HttpStatus.OK).body(result);
 		}
 	}
 
-	@GetMapping("api/someus/share/write")
-	public ResponseEntity<Map<String, Object>> writePublic() throws Exception{
-		
-		Map <String, Object> result = new HashMap<>();
+	// 9. 교환 일기 작성 화면 요청
+	@GetMapping("api/someus/share/{shareRoomId}/write")
+	public ResponseEntity<Map<String, Object>> writePublic(@PathVariable("shareRoomId") int shareRoomId) throws Exception {
+
+		Map<String, Object> result = new HashMap<>();
 		List<WeatherDto> weatherList = diaryService.weatherList();
 		List<MoodDto> moodList = diaryService.moodList();
-		
+
 		result.put("weatherList", weatherList);
 		result.put("moodList", moodList);
-		
-		if (weatherList != null && moodList !=null) {
+
+		if (weatherList != null && moodList != null) {
 			return ResponseEntity.status(HttpStatus.OK).body(result);
 		} else {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 		}
 	}
-	
-	@PostMapping("/api/someus/share/write")
-	public ResponseEntity<Map<String, Object>> insertPublic(@RequestBody DiaryDto diaryDto, HttpServletRequest request)
+
+	// 10. 교환 일기 작성
+	@PostMapping("/api/someus/share/{shareRoomId}/write")
+	public ResponseEntity<Map<String, Object>> insertPublic(
+			@PathVariable("shareRoomId") int shareRoomId,
+			@RequestPart(value = "files", required = false) MultipartFile[] files,
+			@RequestPart(value = "data", required = false) DiaryDto diaryDto, HttpServletRequest request)
 			throws Exception {
+
 		String jwtToken = null;
 		String subject = null;
 		String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
@@ -260,9 +315,31 @@ public class DiaryApiController {
 			subject = jwtTokenUtil.getSubjectFromToken(jwtToken);
 		}
 		diaryDto.setMemberId(subject);
+		diaryDto.setShareRoomId(shareRoomId);
 
+		String FileNames = "";
 		int insertedCount = 0;
+
 		try {
+			for (MultipartFile mf : files) {
+				String originFileName = mf.getOriginalFilename(); // 원본 파일 명
+				long fileSize = mf.getSize(); // 파일 사이즈
+
+				System.out.println("originFileName : " + originFileName);
+				System.out.println("fileSize : " + fileSize);
+				String safeFile = System.currentTimeMillis() + originFileName;
+				diaryDto.setDiaryImg(safeFile);
+
+				try {
+					File f1 = new File(UPLOAD_PATH + safeFile);
+					mf.transferTo(f1);
+				} catch (IllegalStateException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			
 			insertedCount = diaryService.insertPublic(diaryDto);
 			if (insertedCount > 0) {
 				Map<String, Object> result = new HashMap<>();
@@ -284,63 +361,64 @@ public class DiaryApiController {
 		}
 	}
 
-	@GetMapping("/api/someus/share/{shareRoomId}")
-	public ResponseEntity<List<DiaryDto>> openPublicDetail(@PathVariable("shareRoomId") int shareRoomId)
-			throws Exception {
-		List<DiaryDto> diaryDto = diaryService.selectPublicDetail(shareRoomId);
-		if (diaryDto == null) {
+	// 11. 교환 일기 상세 조회
+	@GetMapping("/api/someus/share/{shareRoomId}/{createdDt}")
+	public ResponseEntity<List<DiaryDto>> selectPublicDetail(@PathVariable Map<String, String> val) throws Exception {
+
+		int shareRoomId = Integer.parseInt(val.get("shareRoomId"));
+		String createdDt = val.get("createdDt");
+
+		List<DiaryDto> list = diaryService.selectPublicDetail(shareRoomId, createdDt);
+
+		if (list != null) {
+			return ResponseEntity.status(HttpStatus.OK).body(list);
+		} else {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-		} else {
-			return ResponseEntity.status(HttpStatus.OK).body(diaryDto);
 		}
-
 	}
 
-	@PutMapping("/api/someus/share/{shareRoomId}/{diaryId}")
-	public ResponseEntity<Integer> updatePublic(@PathVariable("shareRoomId") int shareRoomId,
-			@PathVariable("diaryId") int diaryId, @RequestBody DiaryDto diaryDto) throws Exception {
-		diaryDto.setDiaryId(diaryId);
-		diaryDto.setShareRoomId(shareRoomId);
-
-		log.debug(">>>>>>>>>>>>>>>>>");
-		log.debug(diaryDto.toString());
-
-		int updatedCount = diaryService.updatePublic(diaryDto);
-		if (updatedCount != 1) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(updatedCount);
-		} else {
-			return ResponseEntity.status(HttpStatus.OK).body(updatedCount);
-		}
-
-	}
-
-//	@DeleteMapping("/api/someus/share/{shareRoomId}/{diaryId}")
-//	public ResponseEntity<Integer> deletePublic(@PathVariable("shareRoomId") int shareRoomId,
-//			@PathVariable("diaryId") int diaryId) throws Exception {
-//		
-////		int deletedCount = diaryService.deletePublic(diaryDto);
-//		int deletedCount = diaryService.deletePublic(shareRoomId, diaryId);
-//		
-//		if (deletedCount != 1) {
-//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(deletedCount);
+//	// 교환 일기 수정
+//	@PutMapping("/api/someus/share/{shareRoomId}/{createdDt}")
+//	public ResponseEntity<Integer> updatePublic(@PathVariable("shareRoomId") int shareRoomId,
+//			@PathVariable("createdDt") String createdDt, @RequestBody DiaryDto diaryDto) throws Exception {
+//		diaryDto.setCreatedDt(createdDt);
+//		diaryDto.setShareRoomId(shareRoomId);
+//
+//		log.debug(">>>>>>>>>>>>>>>>>");
+//		log.debug(diaryDto.toString());
+//
+//		int updatedCount = diaryService.updatePublic(diaryDto);
+//		if (updatedCount != 1) {
+//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(updatedCount);
 //		} else {
-//			return ResponseEntity.status(HttpStatus.OK).body(deletedCount);
+//			return ResponseEntity.status(HttpStatus.OK).body(updatedCount);
 //		}
 //	}
-	
-	@PostMapping("/api/someus/addgroup/{shareRoomId}")
-	public ResponseEntity<List<ShareRoomDto>> insertAddGroup(@RequestBody ShareRoomDto shareRoomDto, HttpServletRequest request)
-			throws Exception {
-		
-		List<ShareRoomDto> list = diaryService.insertAddGroup(shareRoomDto);
 
-		if (list == null) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+	// 12. 교환 일기 목록 추가
+	@PostMapping("/api/someus/addgroup")
+	public ResponseEntity<Integer> addGroup(@RequestBody ShareRoomDto shareRoomDto) throws Exception {
+
+		int insertGroupCount = diaryService.addGroup(shareRoomDto);
+		if (insertGroupCount != 1) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(insertGroupCount);
 		} else {
-			return ResponseEntity.status(HttpStatus.OK).body(list);
+			return ResponseEntity.status(HttpStatus.OK).body(insertGroupCount);
 		}
 	}
 
-	
+	// 13. 교환 일기 멤버 추가
+	@PostMapping("/api/someus/addgroupnext")
+	public ResponseEntity<Integer> addGroupNext(@RequestBody ShareMemberDto shareMemberDto) throws Exception {
+		int insertMemberCount = diaryService.addGroupNext(shareMemberDto);
+		
+		if (insertMemberCount != 1) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(insertMemberCount);
+		} else {
+			return ResponseEntity.status(HttpStatus.OK).body(insertMemberCount);
+		}
+	}
+
+	// 14. 개인/그룹 선택 화면
 
 }

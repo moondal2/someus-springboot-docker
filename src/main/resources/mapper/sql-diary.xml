@@ -2,14 +2,24 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="project.mapper.DiaryMapper">
 
-	<!-- 개인 일기 목록에 들어갔을 때(현재 년, 월에 맞는 결과만 출력) -->
+	<!-- 1. 개인 일기 목록 조회 -->
 	<select id="selectPrivateList" resultType="project.dto.DiaryDto">
 		  select diary_id, diary_content, diary_img, member_id
 			from t_diary
 		   where DATE_FORMAT(created_dt, '%Y-%m') = DATE_FORMAT(now(), '%Y-%m')
+		     and member_id=#{memberId}
 		order by created_dt
 	</select>
-
+	
+	<!-- 1-1. 날짜별 개인 일기 목록 조회 -->
+	<select id="selectPrivateListByDt" resultType="project.dto.DiaryDto">
+		  select diary_id, diary_content, diary_img, member_id
+			from t_diary
+		   where DATE_FORMAT(created_dt, '%Y-%m') = DATE_FORMAT(#{createdDt}, '%Y-%m')
+		     and member_id=#{memberId}
+		order by created_dt
+	</select>
+	
 	<insert id="insertGoal" parameterType="project.dto.GoalDto">
 		insert into t_goal
 		(member_id, goal_contents, goal_date, acheive_yn)
@@ -25,45 +35,42 @@
 		acheive_yn = #{acheiveYn}
 		where member_id = #{memberId}
 	</update>
-	
-	<!-- 특정 날짜를 선택했을 때 -->
-	<select id="selectPrivateByCreatedDb" parameterType="String" resultType="project.dto.DiaryDto">
-		select diary_id, diary_content, diary_img, member_id 
-		  from t_diary
-		 where DATE_FORMAT(created_dt, '%Y-%m-%d') = DATE_FORMAT(#{created_dt}, '%Y-%m-%d')
-	</select>
-	
-	<insert id="insertPrivate"  parameterType="project.dto.DiaryDto">
-		insert into t_diary (member_id, diary_content, diary_img, mood_id, weather_id)
-		values (#{memberId}, #{diaryContent}, #{diaryImg},
-				#{moodId}, #{weatherId})
-	</insert>
-	
-	<!-- 날씨 선택 화면 출력 -->
+
+	<!-- 2, 9. 개인/교환 일기 작성 화면 - 기분, 날씨 선택 -->
 	<select id="weatherList" resultType="project.dto.WeatherDto">
-		 select weather_id, weather_img
+		 select weather_id
 		   from t_weather
 	</select>
 	
-	<!-- 기분 선택 화면 출력 -->
+	<!-- 2, 9. 개인/교환 일기 작성 화면 - 기분, 날씨 선택 -->
 	<select id="moodList" resultType="project.dto.MoodDto">
-		 select mood_id, mood_img
+		 select mood_id
 		   from t_mood
 	</select>
 	
-	<!-- 상세 화면 출력 -->
+	<!-- 3. 개인 일기 작성 -->
+	<insert id="insertPrivate"  parameterType="project.dto.DiaryDto">
+		insert into t_diary (member_id, diary_content, diary_img, mood_id, weather_id, created_dt)
+		values (#{memberId}, #{diaryContent}, #{diaryImg},
+				#{moodId}, #{weatherId}, now())
+	</insert>
+
+	
+	<!-- 4. 개인 일기 상세 조회 -->
 	<select id="selectPrivateDetail" parameterType="INTEGER" resultType="project.dto.DiaryDto">
 		select diary_content, created_dt, diary_img, mood_id, weather_id
 		  from t_diary
 		 where diary_id = #{diaryId}
 	</select>
 	
+	<!-- 5. 개인 일기 수정 -->
 	<update id="updatePrivate" parameterType="project.dto.DiaryDto">
 		update t_diary
 		   set diary_content = #{diaryContent}
 		 where diary_id = #{diaryId}
 	</update>
 	
+	<!-- 6. 개인 일기 삭제 -->
 	<delete id="deletePrivate" parameterType="integer">
 		 update t_diary
 			set deleted_yn = "Y",
@@ -71,32 +78,70 @@
 		  where diary_id = #{diaryId}
 	</delete>
 	
+	<!-- 7. 교환 일기 그룹 목록 조회 -->
 	<select id="selectPublicList" resultType="project.dto.ShareRoomDto">
 		select member_id, share_room_id, share_room_name
 		  from t_share_room
-		 	
+		 where member_id = #{memberId}
 	</select>
 	
+	<resultMap id="diaryResultMap" type="java.util.HashMap">
+		  <result column="share_room_id" property="shareRoomId" />
+		  <result column="share_room_name" property="shareRoomName" />
+		  <result column="diary_id" property="diaryId" />
+		  <result column="diary_content" property="diaryContent" />
+		  <result column="created_dt" property="createdDt" />
+		  <result column="member_name" property="memberName" />
+	</resultMap>
+	
+	<!-- 8. 교환 일기 목록 조회 -->
+	<select id="selectPublicShareList" resultMap="diaryResultMap">
+		SELECT sr.share_room_id, sr.share_room_name, d.diary_id, d.diary_content, d.created_dt, m.member_name
+		FROM t_member m 
+		INNER JOIN ( t_share_room sr 
+		INNER JOIN t_diary d ON sr.share_room_id = d.share_room_id) 
+		ON m.member_id = d.member_id
+		WHERE sr.share_room_id = #{shareRoomId}
+		AND DATE_FORMAT(created_dt, '%Y-%m') = DATE_FORMAT(now(), '%Y-%m')
+	</select>
+	
+	<!-- 8-1. 날짜별 교환 일기 목록 조회 -->
+	<select id="selectPublicShareListByDt" resultMap="diaryResultMap">
+		SELECT sr.share_room_id, sr.share_room_name, d.diary_id, d.diary_content, d.created_dt, m.member_name
+		FROM t_member m 
+		INNER JOIN ( t_share_room sr 
+		INNER JOIN t_diary d ON sr.share_room_id = d.share_room_id) 
+		ON m.member_id = d.member_id
+		WHERE sr.share_room_id = #{shareRoomId}
+		AND DATE_FORMAT(created_dt, '%Y-%m') = DATE_FORMAT(#{createdDt}, '%Y-%m')
+	</select>
+	 
+	<!--  
 	<select id="selectPublicShareList" resultType="project.dto.ShareMemberDto">
 		select share_member_id, share_room_id, member_id
 	      from t_share_member
 		 where DATE_FORMAT(created_dt, '%Y-%m') = DATE_FORMAT(now(), '%Y-%m')
 	</select>
+	-->
 	
+	<!-- 10. 교환 일기 작성 -->
 	<insert id="insertPublic" parameterType="project.dto.DiaryDto">
-		insert into t_diary(member_id, share_room_id, diary_id, diary_content,
+		insert into t_diary(member_id, diary_content,
 							diary_img, mood_id, weather_id, created_dt)
-		values (#{memberId}, #{shareRoomId}, #{diaryId}, #{diaryContent},
+		values (#{memberId}, #{diaryContent},
 				#{diaryImg}, #{moodId}, #{weatherId}, now())
 	</insert>
 	
-	<select id="selectPublicDetail" parameterType="integer" resultType="project.dto.DiaryDto">
+	<!-- 11. 교환 일기 상세 조회 -->
+	<select id="selectPublicDetail" parameterType="MAP" resultType="project.dto.DiaryDto">
 		select diary_id, member_id, share_room_id, diary_content,
 				created_dt, diary_img, mood_id, weather_id
 		  from t_diary
 		 where share_room_id = #{shareRoomId}
+		   and DATE_FORMAT(created_dt, '%Y-%m-%d') = DATE_FORMAT(#{createdDt}, '%Y-%m-%d')
 	</select>
 	
+	<!--
 	<update id="updatePublic" parameterType="project.dto.DiaryDto">
 		 update t_diary
 			set diary_content = #{diaryContent},
@@ -106,18 +151,33 @@
 				member_id = #{memberId}
 			where diary_id = #{diaryId} and share_room_id = #{shareRoomId}
 	</update>
-	
+	 
 	<update id="deletePublic" parameterType="map">
 		 update t_diary
 			set deleted_yn = "Y",
 				deleted_dt = now()
 		  where share_room_id = #{shareRoomId} and diary_id = #{diaryId}
 	</update>
+	-->
 	
 	<select id="selectGoalList" resultType="project.dto.GoalDto">
 		select member_id, goal_id, goal_contents, goal_date, acheive_yn
 		  from t_goal
 	     where member_id = #{memberId} and goal_id = #{goalId}
 	</select>
+	
+	<!-- 12. 교환 일기 그룹 추가 -->
+	<insert id="addGroup" parameterType="project.dto.ShareRoomDto">
+		INSERT INTO t_share_room (member_id, share_room_name)
+		     VALUES (#{memberId}, #{shareRoomName})
+	</insert>
+	
+	<!-- 13. 교환 일기 멤버 추가 -->
+	<insert id="addGroupNext" parameterType="project.dto.ShareMemberDto">
+		INSERT INTO t_share_member (member_id, share_room_id)
+			 <!-- 접속한 사용자, 친구의 아이디가 같은 번호의 방을 사용할 수 있도록 설정 -->
+			 VALUES (#{memberId}, #{shareRoomId}),
+			 		(#{memberId}, #{shareRoomId})
+	</insert>
 	
 </mapper>

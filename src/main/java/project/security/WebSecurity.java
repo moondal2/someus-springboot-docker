@@ -44,8 +44,8 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 //			.and().addFilter(getAuthenticationFilter());
 		
 		http.authorizeRequests()
-			.antMatchers("/login", "/api/regist", "/error").permitAll()
-			//.antMatchers("**").permitAll()
+			.antMatchers("/login", "/api/regist", "/error", "/api/someus/mainpage").permitAll()
+//			.antMatchers("**").permitAll()
 			.anyRequest().authenticated()
 			.and().addFilter(getAuthenticationFilter())
 			.addFilterBefore(jwtRequestFilter, AuthenticationFilter.class).cors();
