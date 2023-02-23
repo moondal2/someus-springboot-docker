@@ -20,7 +20,7 @@ public interface DiaryMapper {
 	 List<DiaryDto> selectPrivateList(String memberId) throws Exception;
 	 
 	 // 1-1. 날짜별 개인 일기 목록 조회
-	 public List<DiaryDto> selectPrivateListByDt(String memberId, String createdDt) throws Exception;
+	 public List<DiaryDto> selectPrivateListByDt(@Param("memberId") String memberId,@Param("createdDt") String createdDt) throws Exception;
 
 	 // 2, 9. 개인/교환 일기 작성 화면 - 기분, 날씨 선택
 	 List<WeatherDto> weatherList() throws Exception;
