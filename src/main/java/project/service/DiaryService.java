@@ -38,7 +38,7 @@ public interface DiaryService {
 	public int deletePrivate(int diaryId) throws Exception;
 	
 	// 7. 교환 일기 그룹 목록 조회
-	public List<ShareRoomDto> selectPublicList() throws Exception;
+	public List<ShareRoomDto> selectPublicList(String memberId) throws Exception;
 	
 	// 8. 교환 일기 목록 조회
 	public List<Map<String, Object>> selectPublicShareList(int shareRoomId) throws Exception;
@@ -55,8 +55,11 @@ public interface DiaryService {
 	// 12. 교환 일기 그룹 추가
 	int addGroup(ShareRoomDto shareRoomDto) throws Exception;
 	
+	// 12-1. 멤버 추가 전 아이디, 이름을 기준으로 번호 조회
+	int selectShareRoomId(@Param("memberId")String memberId) throws Exception;
+		 
 	// 13. 교환 일기 멤버 추가
-	public int addGroupNext(ShareMemberDto shareMemberDto) throws Exception;
+	public int addGroupNext(List<Map<String, Object>> result) throws Exception;
 	
 	// 17. 개인 목표 목록 조회
 	public List<GoalDto> selectGoalList(@Param("memberId")String memberId, @Param("goalDate")String goalDate) throws Exception;

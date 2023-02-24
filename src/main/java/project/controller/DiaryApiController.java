@@ -26,6 +26,8 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.jsonwebtoken.io.IOException;
 import lombok.extern.slf4j.Slf4j;
 import project.dto.DiaryDto;
@@ -233,10 +235,10 @@ public class DiaryApiController {
 	}
 
 	// 7. 교환 일기 그룹 목록 조회
-	@GetMapping("/api/someus/share/grouplist")
-	public ResponseEntity<List<ShareRoomDto>> openGroupList() throws Exception {
+	@GetMapping("/api/someus/share/grouplist/{memberId}")
+	public ResponseEntity<List<ShareRoomDto>> openGroupList(@PathVariable("memberId") String memberId) throws Exception {
 
-		List<ShareRoomDto> list = diaryService.selectPublicList();
+		List<ShareRoomDto> list = diaryService.selectPublicList(memberId);
 		
 		if (list != null && list.size() > 0) {
 			return ResponseEntity.status(HttpStatus.OK).body(list);
@@ -253,7 +255,7 @@ public class DiaryApiController {
 		List<Map<String, Object>> result = diaryService.selectPublicShareList(shareRoomId);
 		
 		if (result == null) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+			return ResponseEntity.status(HttpStatus.OK).body(result);
 		} else {
 			return ResponseEntity.status(HttpStatus.OK).body(result);
 		}
@@ -312,8 +314,9 @@ public class DiaryApiController {
 		
 		String FileNames = "";
 		int insertedCount = 0;
-
+		
 		try {
+			
 			for (MultipartFile mf : files) {
 				String originFileName = mf.getOriginalFilename(); // 원본 파일 명
 				long fileSize = mf.getSize(); // 파일 사이즈
@@ -357,7 +360,7 @@ public class DiaryApiController {
 	}
 
 	// 11. 교환 일기 상세 조회
-	@GetMapping("/api/someus/share/{shareRoomId}/{createdDt}")
+	@GetMapping("/api/someus/sharelist/{shareRoomId}/{createdDt}")
 	public ResponseEntity<List<DiaryDto>> selectPublicDetail(@PathVariable Map<String, String> val) throws Exception {
 
 		int shareRoomId = Integer.parseInt(val.get("shareRoomId"));
@@ -383,18 +386,37 @@ public class DiaryApiController {
 			return ResponseEntity.status(HttpStatus.OK).body(insertGroupCount);
 		}
 	}
+	
+	// 12-1. 멤버 추가 전 아이디를 기준으로 번호 조회
+	@GetMapping("/api/someus/addgroup/{memberId}")
+	public ResponseEntity<Integer> selectShareRoomId(
+			@PathVariable ("memberId") String memberId) throws Exception {
+		
+		int shareRoomId = diaryService.selectShareRoomId(memberId);
+		
+		return ResponseEntity.status(HttpStatus.OK).body(shareRoomId);
+	}
 
 	// 13. 교환 일기 멤버 추가
+//	@PostMapping("/api/someus/addgroupnext")
+//	public ResponseEntity<Integer> addGroupNext(@RequestBody ShareMemberDto shareMemberDto) throws Exception {
+//		
+//		int insertMemberCount = diaryService.addGroupNext(shareMemberDto);
+//		
+//		if (insertMemberCount != 1) {
+//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(insertMemberCount);
+//		} else {
+//			return ResponseEntity.status(HttpStatus.OK).body(insertMemberCount);
+//		}
+//	}
 	@PostMapping("/api/someus/addgroupnext")
-	public ResponseEntity<Integer> addGroupNext(@RequestBody ShareMemberDto shareMemberDto) throws Exception {
-		
-		int insertMemberCount = diaryService.addGroupNext(shareMemberDto);
-		
-		if (insertMemberCount != 1) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(insertMemberCount);
-		} else {
-			return ResponseEntity.status(HttpStatus.OK).body(insertMemberCount);
-		}
+	public ResponseEntity<Integer> addGroupNext(@RequestBody List<Map<String, Object>> requestData) throws Exception {
+		int insertMemberCount = diaryService.addGroupNext(requestData);
+	    if (insertMemberCount == 2) {
+	        return ResponseEntity.status(HttpStatus.OK).body(insertMemberCount);
+	    } else {
+	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(insertMemberCount);
+	    }
 	}
 
 	// 14. 개인/그룹 선택 화면

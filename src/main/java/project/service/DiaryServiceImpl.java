@@ -1,5 +1,6 @@
 package project.service;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -10,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import project.dto.DiaryDto;
 import project.dto.GoalDto;
 import project.dto.MoodDto;
-import project.dto.ShareMemberDto;
 import project.dto.ShareRoomDto;
 import project.dto.WeatherDto;
 import project.mapper.DiaryMapper;
@@ -69,8 +69,8 @@ public class DiaryServiceImpl implements DiaryService {
 	
 	// 7. 교환 일기 그룹 목록 조회
 	@Override
-	public List<ShareRoomDto> selectPublicList() throws Exception {
-		return diaryMapper.selectPublicList();
+	public List<ShareRoomDto> selectPublicList(String memberId) throws Exception {
+		return diaryMapper.selectPublicList(memberId);
 	}
 	
 	// 8. 교환 일기 목록 조회
@@ -103,10 +103,25 @@ public class DiaryServiceImpl implements DiaryService {
 		return diaryMapper.addGroup(shareRoomDto);
 	}
 
+	// 12-1. 멤버 추가 전 아이디, 이름을 기준으로 번호 조회
+	@Override
+	public int selectShareRoomId(String memberId) throws Exception {
+		return diaryMapper.selectShareRoomId(memberId);
+	}
+	 
 	// 13. 교환 일기 멤버 추가
 	@Override
-	public int addGroupNext(ShareMemberDto shareMemberDto) throws Exception {
-		return diaryMapper.addGroupNext(shareMemberDto);
+	public int addGroupNext(List<Map<String, Object>> result) throws Exception {
+		
+		int count = 0;
+		Iterator<Map<String, Object>> resultList = result.iterator();
+		
+		while(resultList.hasNext()) {
+			Map<String, Object> temp = resultList.next();
+			diaryMapper.addGroupNext(temp);
+			count ++;
+		}
+		return count;
 	}
 	
 	// 17. 목표 조회
