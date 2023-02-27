@@ -65,13 +65,16 @@ public interface DiaryService {
 	public int addGroupNext(List<Map<String, Object>> result) throws Exception;
 	
 	// 17. 개인 목표 목록 조회
-	public List<GoalDto> selectGoalList(@Param("memberId")String memberId, @Param("goalDate")String goalDate) throws Exception;
+	public List<GoalDto> selectGoalList(@Param("memberId") String memberId, @Param("goalDate") String goalDate) throws Exception;
 	 
 	// 18. 개인 목표 쓰기
 	public int insertGoal(GoalDto goalDto) throws Exception;
 	 
 	// 19. 개인 목표 수정
 	public int updateGoal(GoalDto goalDto) throws Exception;
+
+	// 20. 개인 목표 삭제
+	public int deleteGoal(int goalId) throws Exception;
 
 	
 }

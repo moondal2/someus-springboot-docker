@@ -66,13 +66,16 @@ public interface DiaryMapper {
 	 int addGroupNext(Map<String, Object> result) throws Exception;
 
 	 // 17. 개인 목표 목록 조회
-	 List<GoalDto> selectGoalList(@Param("memberId")String memberId, @Param("goalDate")String goalDate) throws Exception;
+	 List<GoalDto> selectGoalList(@Param("memberId") String memberId, @Param("goalDate") String goalDate) throws Exception;
 	 
 	 // 18. 개인 목표 쓰기
 	 int insertGoal(GoalDto goalDto) throws Exception;
 	 
 	 // 19. 개인 목표 수정
 	 int updateGoal(GoalDto goalDto) throws Exception;
+
+	 // 20. 개인 목표 삭제
+	 int deleteGoal(int goalId) throws Exception;
 
 	
 	 

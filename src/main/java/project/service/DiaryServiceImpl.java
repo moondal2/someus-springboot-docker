@@ -147,9 +147,11 @@ public class DiaryServiceImpl implements DiaryService {
 	public int updateGoal(GoalDto goalDto) throws Exception {
 		return diaryMapper.updateGoal(goalDto);			
 	}
-	
-//	@Override
-//	public int updateGoal(GoalDto goalDto) throws Exception {
-//		return diaryMapper.updateGoal(goalDto);
-//	}
+
+	// 20. 개인 목표 삭제
+	@Override
+	public int deleteGoal(int goalId) throws Exception {
+		return diaryMapper.deleteGoal(goalId);
+	}
+
 }

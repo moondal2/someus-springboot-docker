@@ -423,10 +423,12 @@ public class DiaryApiController {
 	
 	
 	// 17. 개인 목표 목록 조회
-	@GetMapping("/api/somemus/private/goal")
+	
+	@GetMapping("/api/someus/private/list/goal/{memberId}/{goalDate}")
 	public ResponseEntity<List<GoalDto>> selectGoalList(
-			@RequestParam (value="goalDate") String goalDate,
-			@RequestParam (value="memberId") String memberId) throws Exception {
+			@PathVariable (value="memberId") String memberId, 
+			@PathVariable (value="goalDate") String goalDate
+			) throws Exception {
 		
 		List<GoalDto> list = diaryService.selectGoalList(memberId, goalDate);
 		
@@ -436,9 +438,23 @@ public class DiaryApiController {
 			return ResponseEntity.status(HttpStatus.OK).body(list);
 		}
 	}
+//	@GetMapping("/api/somemus/private/list/goal")
+//	public ResponseEntity<List<GoalDto>> selectGoalList(
+//			@RequestParam (value="memberId") String memberId, 
+//			@RequestParam (value="goalDate") String goalDate
+//			) throws Exception {
+//		
+//		List<GoalDto> list = diaryService.selectGoalList(memberId, goalDate);
+//		
+//		if (list.size() > 0) {
+//			return ResponseEntity.status(HttpStatus.OK).body(list);
+//		} else {
+//			return ResponseEntity.status(HttpStatus.OK).body(list);
+//		}
+//	}
 	
 	// 18. 개인 목표 쓰기
-	@PostMapping("/api/someus/private/goal")
+	@PostMapping("/api/someus/private/list/goal")
 	public ResponseEntity<Integer> insertGoal(
 			@RequestBody GoalDto goalDto) throws Exception {
 		
@@ -452,7 +468,7 @@ public class DiaryApiController {
 	}
 	
 	// 19. 개인 목표 수정
-	@PostMapping("/api/someus/private/goal/{goalId}")
+	@PutMapping("/api/someus/private/list/goal/{goalId}")
 	public ResponseEntity<Integer> updateGoal(
 			@PathVariable("goalId") int goalId,
 			@RequestBody GoalDto goalDto) throws Exception {
@@ -466,5 +482,16 @@ public class DiaryApiController {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 		}
 	}
+	
+	// 20. 개인 목표 삭제
+	@DeleteMapping("/api/someus/private/list/goal/{goalId}")
+	   public ResponseEntity<Integer> deleteGoal(@PathVariable("goalId") int goalId) throws Exception{
+	      int result = diaryService.deleteGoal(goalId);
+	      if(result != 0 ) {
+	         return ResponseEntity.status(HttpStatus.OK).body(result);
+	      } else {
+	         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+	      }
+	   }
 	
 }

@@ -18,10 +18,11 @@
 	<select id="selectPrivateListByDt" resultType="project.dto.DiaryDto">
 		  select diary_id, diary_content, diary_img, member_id, mood_id, weather_id, DATE_FORMAT(created_dt, '%Y-%m-%d') as created_dt
 			from t_diary
-		   where DATE_FORMAT(created_dt, '%Y-%m') = DATE_FORMAT(#{createdDt}, '%Y-%m')
+			where YEAR(created_dt) = YEAR(#{createdDt})
+             and MONTH(created_dt) = MONTH(#{createdDt})
 		     and deleted_yn = 'N'
 		     and member_id=#{memberId}
-		     and share_room_id=null
+		     and share_room_id is null
 		order by created_dt desc
 	</select>
 	
@@ -154,10 +155,8 @@
 			 VALUES (#{memberId}, #{shareRoomId})
 	</insert>
 	
-	
-	
 	<!-- 17. 이 달의 목표 조회 -->
-	<select id="selectGoalList" parameterType="map" resultType="project.dto.GoalDto">
+	<select id="selectGoalList" parameterType="project.dto.GoalDto" resultType="project.dto.GoalDto">
 		select member_id, goal_id, goal_contents, goal_date, goal_state
 		  from t_goal
 		 where member_id=#{memberId} and DATE_FORMAT(goal_date,'%Y-%m') = DATE_FORMAT(#{goalDate},'%Y-%m')
@@ -179,4 +178,9 @@
 			   where goal_id = #{goalId}
 	</update>
 
+ 	<!-- 20. 목표 삭제 -->
+ 	<delete id="deleteGoal" parameterType="project.dto.GoalDto">
+      delete from t_goal
+      where goal_id = #{goalId}
+   </delete>
 </mapper>
