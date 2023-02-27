@@ -10,6 +10,7 @@
 		   where DATE_FORMAT(created_dt, '%Y-%m') = DATE_FORMAT(now(), '%Y-%m')
 		   	 and deleted_yn = 'N'
 		     and member_id=#{memberId}
+		     and share_room_id is null
 		order by created_dt desc
 	</select>
 	
@@ -20,6 +21,7 @@
 		   where DATE_FORMAT(created_dt, '%Y-%m') = DATE_FORMAT(#{createdDt}, '%Y-%m')
 		     and deleted_yn = 'N'
 		     and member_id=#{memberId}
+		     and share_room_id=null
 		order by created_dt desc
 	</select>
 	
@@ -67,10 +69,14 @@
 	
 	<!-- 7. 교환 일기 그룹 목록 조회 -->
 	<select id="selectPublicList" parameterType="String" resultType="project.dto.ShareRoomDto">
-		select member_id, share_room_id, share_room_name
-		  from t_share_room
-		 where member_id = #{memberId}
+      SELECT m.member_id, m.member_name, sm.share_room_id, sr.share_room_name
+        FROM t_member m INNER JOIN (t_share_room sr INNER JOIN t_share_member sm ON sr.share_room_id = sm.share_room_id) ON m.member_id = sm.member_id
+       WHERE m.member_id = #{memberId}
+       order by share_room_id desc
 	</select>
+	
+
+	
 	
 	<resultMap id="diaryResultMap" type="java.util.HashMap">
 		  <result column="share_room_id" property="shareRoomId" />
@@ -83,7 +89,7 @@
 	
 	<!-- 8. 교환 일기 목록 조회 -->
 	<select id="selectPublicShareList" resultMap="diaryResultMap">
-		SELECT sr.share_room_id, sr.share_room_name, d.diary_id, d.diary_content, d.created_dt, m.member_name
+		SELECT sr.share_room_id, sr.share_room_name, d.diary_id, d.diary_content, d.created_dt, m.member_name, d.mood_id, d.weather_id, d.diary_img
 		FROM t_member m 
 		INNER JOIN ( t_share_room sr 
 		INNER JOIN t_diary d ON sr.share_room_id = d.share_room_id) 
@@ -92,15 +98,22 @@
 		AND DATE_FORMAT(created_dt, '%Y-%m') = DATE_FORMAT(now(), '%Y-%m')
 	</select>
 	
-	<!-- 8-1. 날짜별 교환 일기 목록 조회 -->
+	<!-- 8-1. 교환일기별 멤버 목록 조회 --> 
+	<select id="selectShareRoomMemberList" parameterType="Integer" resultType="project.dto.ShareRoomDto"> 
+	SELECT sr.share_room_id, sr.share_room_name, m.member_id, m.member_name 
+	  FROM t_member m INNER JOIN (t_share_room sr INNER JOIN t_share_member sm ON sr.share_room_id = sm.share_room_id) ON m.member_id = sm.member_id 
+	 WHERE sr.share_room_id=#{shareRoomId}
+	</select> 
+	
+	<!-- 8-2. 날짜별 교환 일기 목록 조회 -->
 	<select id="selectPublicShareListByDt" resultMap="diaryResultMap">
-		SELECT sr.share_room_id, sr.share_room_name, d.diary_id, d.diary_content, d.created_dt, m.member_name
-		FROM t_member m 
-		INNER JOIN ( t_share_room sr 
-		INNER JOIN t_diary d ON sr.share_room_id = d.share_room_id) 
-		ON m.member_id = d.member_id
-		WHERE sr.share_room_id = #{shareRoomId}
-		AND DATE_FORMAT(created_dt, '%Y-%m') = DATE_FORMAT(#{createdDt}, '%Y-%m')
+		SELECT sr.share_room_id, sr.share_room_name, d.diary_id, d.diary_content, d.created_dt, m.member_name, d.mood_id, d.weather_id
+		  FROM t_member m 
+	INNER JOIN ( t_share_room sr 
+	INNER JOIN t_diary d ON sr.share_room_id = d.share_room_id) 
+		    ON m.member_id = d.member_id
+		 WHERE sr.share_room_id = #{shareRoomId}
+		   AND DATE_FORMAT(created_dt, '%Y-%m') = DATE_FORMAT(#{createdDt}, '%Y-%m')
 	</select>
 	 
 	<!-- 10. 교환 일기 작성 -->

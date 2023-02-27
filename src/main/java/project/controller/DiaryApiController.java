@@ -247,6 +247,8 @@ public class DiaryApiController {
 		}
 	}
 	
+	
+	
 	// 8. 교환 일기 목록 조회
 	@GetMapping("/api/someus/shareroom/{shareRoomId}")
 	public ResponseEntity<List<Map<String, Object>>> openPublicDetail(@PathVariable("shareRoomId") int shareRoomId)
@@ -261,7 +263,16 @@ public class DiaryApiController {
 		}
 	}
 	
-	// 8-1. 날짜별 교환 일기 목록 조회
+	// 8-1. 교환일기별 멤버 목록 조회
+	@GetMapping("/api/someus/shareroom/member/{shareRoomId}")
+	public ResponseEntity<List<ShareRoomDto>> selectShareRoomMemberList(@PathVariable("shareRoomId") int shareRoomId) throws Exception {
+		
+		List<ShareRoomDto> list = diaryService.selectShareRoomMemberList(shareRoomId);
+		
+		return ResponseEntity.status(HttpStatus.OK).body(list);
+	}
+	
+	// 8-2. 날짜별 교환 일기 목록 조회
 	@GetMapping("/api/someus/shareroom/{shareRoomId}/{createdDt}")
 	public ResponseEntity<List<Map<Object, Object>>> selectPublicShareListByDt(
 			@PathVariable("shareRoomId") int shareRoomId,
@@ -398,17 +409,6 @@ public class DiaryApiController {
 	}
 
 	// 13. 교환 일기 멤버 추가
-//	@PostMapping("/api/someus/addgroupnext")
-//	public ResponseEntity<Integer> addGroupNext(@RequestBody ShareMemberDto shareMemberDto) throws Exception {
-//		
-//		int insertMemberCount = diaryService.addGroupNext(shareMemberDto);
-//		
-//		if (insertMemberCount != 1) {
-//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(insertMemberCount);
-//		} else {
-//			return ResponseEntity.status(HttpStatus.OK).body(insertMemberCount);
-//		}
-//	}
 	@PostMapping("/api/someus/addgroupnext")
 	public ResponseEntity<Integer> addGroupNext(@RequestBody List<Map<String, Object>> requestData) throws Exception {
 		int insertMemberCount = diaryService.addGroupNext(requestData);

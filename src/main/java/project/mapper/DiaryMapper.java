@@ -44,7 +44,10 @@ public interface DiaryMapper {
 	 // 8. 교환 일기 목록 조회
 	 List<Map<String, Object>> selectPublicShareList(int shareRoomId) throws Exception;
 	 
-	 // 8-1. 날짜별 교환 일기 목록 조회
+	 // 8-1. 교환일기별 멤버 목록 조회
+	 List<ShareRoomDto> selectShareRoomMemberList(@Param("shareRoomId") int shareRoomId) throws Exception;
+	 
+	 // 8-2. 날짜별 교환 일기 목록 조회
 	 List<Map<Object, Object>> selectPublicShareListByDt(@Param("shareRoomId") int shareRoomId, @Param("createdDt") String createdDt) throws Exception;
 	 
 	 // 10. 교환 일기 작성
@@ -60,7 +63,7 @@ public interface DiaryMapper {
 	 int selectShareRoomId(@Param("memberId")String memberId) throws Exception;
 	 
 	 // 13. 교환 일기 멤버 추가
-//	 int addGroupNext(ShareMemberDto shareMemberDto);
+	 int addGroupNext(Map<String, Object> result) throws Exception;
 
 	 // 17. 개인 목표 목록 조회
 	 List<GoalDto> selectGoalList(@Param("memberId")String memberId, @Param("goalDate")String goalDate) throws Exception;
@@ -71,7 +74,6 @@ public interface DiaryMapper {
 	 // 19. 개인 목표 수정
 	 int updateGoal(GoalDto goalDto) throws Exception;
 
-	 int addGroupNext(Map<String, Object> result);
 	
 	 
 }

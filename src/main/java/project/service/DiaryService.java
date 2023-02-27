@@ -43,7 +43,10 @@ public interface DiaryService {
 	// 8. 교환 일기 목록 조회
 	public List<Map<String, Object>> selectPublicShareList(int shareRoomId) throws Exception;
 	
-	// 8-1. 날짜별 교환 일기 목록 조회
+	// 8-1. 교환일기별 멤버 목록 조회
+	public List<ShareRoomDto> selectShareRoomMemberList(int shareRoomId) throws Exception;
+	
+	// 8-2. 날짜별 교환 일기 목록 조회
 	public List<Map<Object, Object>> selectPublicShareListByDt(int shareRoomId, String createdDt) throws Exception;
 	
 	// 10. 교환 일기 작성
