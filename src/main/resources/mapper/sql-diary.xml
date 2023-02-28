@@ -76,9 +76,6 @@
        order by share_room_id desc
 	</select>
 	
-
-	
-	
 	<resultMap id="diaryResultMap" type="java.util.HashMap">
 		  <result column="share_room_id" property="shareRoomId" />
 		  <result column="share_room_name" property="shareRoomName" />

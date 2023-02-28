@@ -57,9 +57,6 @@ public class DiaryApiController {
 	final String UPLOAD_PATH = "C:/java/eclipse-workspace/someus/src/main/resources/static/img/";
 
 	
-	@GetMapping("/api/someus/mainpage")
-	public void openMainPage() throws Exception {}
-	
 	// 1. 개인 일기 목록 조회
 	@GetMapping("/api/someus/private/page/{memberId}")
 	public ResponseEntity<Map<String, Object>> openPrivateList(@PathVariable("memberId") String memberId)
@@ -247,8 +244,6 @@ public class DiaryApiController {
 		}
 	}
 	
-	
-	
 	// 8. 교환 일기 목록 조회
 	@GetMapping("/api/someus/shareroom/{shareRoomId}")
 	public ResponseEntity<List<Map<String, Object>>> openPublicDetail(@PathVariable("shareRoomId") int shareRoomId)
@@ -419,9 +414,6 @@ public class DiaryApiController {
 	    }
 	}
 
-	// 14. 개인/그룹 선택 화면
-	
-	
 	// 17. 개인 목표 목록 조회
 	
 	@GetMapping("/api/someus/private/list/goal/{memberId}/{goalDate}")
@@ -438,21 +430,7 @@ public class DiaryApiController {
 			return ResponseEntity.status(HttpStatus.OK).body(list);
 		}
 	}
-//	@GetMapping("/api/somemus/private/list/goal")
-//	public ResponseEntity<List<GoalDto>> selectGoalList(
-//			@RequestParam (value="memberId") String memberId, 
-//			@RequestParam (value="goalDate") String goalDate
-//			) throws Exception {
-//		
-//		List<GoalDto> list = diaryService.selectGoalList(memberId, goalDate);
-//		
-//		if (list.size() > 0) {
-//			return ResponseEntity.status(HttpStatus.OK).body(list);
-//		} else {
-//			return ResponseEntity.status(HttpStatus.OK).body(list);
-//		}
-//	}
-	
+
 	// 18. 개인 목표 쓰기
 	@PostMapping("/api/someus/private/list/goal")
 	public ResponseEntity<Integer> insertGoal(
