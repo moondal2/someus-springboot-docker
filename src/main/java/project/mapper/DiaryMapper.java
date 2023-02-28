@@ -16,7 +16,7 @@ import project.dto.WeatherDto;
 @Mapper
 public interface DiaryMapper {
 
-	// 1. 개인 일기 목록 조회
+	 // 1. 개인 일기 목록 조회
 	 List<DiaryDto> selectPrivateList(String memberId) throws Exception;
 	 
 	 // 1-1. 날짜별 개인 일기 목록 조회

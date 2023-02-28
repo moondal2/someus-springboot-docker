@@ -41,9 +41,6 @@ public class LoginServiceImpl implements LoginService {
 			throw new UsernameNotFoundException(membername);
 		}
 		
-		// String username, String password, boolean enabled, boolean accountNonExpired,
-		// boolean credentialsNonExpired, boolean accountNonLocked,
-		// Collection<? extends GrantedAuthority> authorities		
 		return new User(memberDto.getMemberId(), memberDto.getMemberPw(), 
 				true, true, true, true, new ArrayList<>());		
 	}

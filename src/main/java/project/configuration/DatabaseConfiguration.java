@@ -17,7 +17,6 @@ import com.zaxxer.hikari.HikariDataSource;
 
 @Configuration
 @PropertySource("classpath:/application.properties")
-// @EnableTransactionManagement
 public class DatabaseConfiguration {
 
 	@Autowired
@@ -57,10 +56,5 @@ public class DatabaseConfiguration {
 	public SqlSessionTemplate sqlSessionTemplate(SqlSessionFactory sqlSessionFactory) {
 		return new SqlSessionTemplate(sqlSessionFactory);
 	}
-	
-//	@Bean
-//	public PlatformTransactionManager transactionManager() throws Exception {
-//		return new DataSourceTransactionManager(dataSource());
-//	}
 }
 

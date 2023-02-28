@@ -65,34 +65,10 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 	@Override
 	protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
 			Authentication authResult) throws IOException, ServletException {
-		// username = userId 
+		
 		String membername = ((User)authResult.getPrincipal()).getUsername();
 		MemberDto memberDto = loginMapper.selectUserByUserId(membername);
-		log.debug(memberDto.toString());
-		
-//		// 설정파일에서 비밀키를 가져와서 서명에 사용할 키를 생성
-//		// ~~~~~~~~~~~~~~~~~~~
-//		// BASE64로 인코딩된 문자열
-//		String secret = env.getProperty("token.secret");
-//		Key hmacKey = new SecretKeySpec(
-//			Base64.getDecoder().decode(secret), SignatureAlgorithm.HS256.getJcaName() 
-//		);
-//		
-//		
-//		
-//		Instant now = Instant.now();
-//		Long expirationTime = Long.parseLong(env.getProperty("token.expiration-time"));
-//		String jwtToken = Jwts.builder()
-//				.claim("name", userDto.getUserName())
-//				.claim("email", userDto.getUserEmail())
-//				.setSubject(userDto.getUserId())
-//				.setId(UUID.randomUUID().toString())
-//				.setIssuedAt(Date.from(now))
-//				.setExpiration(Date.from(now.plus(expirationTime, ChronoUnit.MILLIS)))
-//				.signWith(hmacKey)
-//				.compact();
-//		log.debug(jwtToken);
-		
+
 		String jwtToken = jwtTokenUtil.generateToken(memberDto);
 		response.setHeader("token", jwtToken);
 		response.getWriter().write(jwtToken);

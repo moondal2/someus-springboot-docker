@@ -18,17 +18,6 @@ public class RestLoginApiController {
 	@Autowired
 	private LoginService loginService;
 	
-//	@PostMapping("/login")
-//	public ResponseEntity<Object> login(LoginDto loginDto) throws Exception {
-//		UserDto userDto = loginService.login(loginDto);
-//		if (userDto == null) {
-//			userDto.setUserPassword("");
-//			return ResponseEntity.status(HttpStatus.OK).body(userDto);
-//		} else {
-//			return ResponseEntity.status(HttpStatus.OK).body(null);
-//		}
-//	}
-	
 	@PostMapping("/api/regist")
 	public ResponseEntity<Object> regist(@RequestBody MemberDto memberDto) throws Exception {
 		int registedCount = loginService.registUser(memberDto);
