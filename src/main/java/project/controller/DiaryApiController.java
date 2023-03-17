@@ -54,8 +54,10 @@ public class DiaryApiController {
 	private ShareMemberDto shareMemberDto;
 	private ShareRoomDto shareRoomDto;
 
-	final String UPLOAD_PATH = "C:/java/eclipse-workspace/someus/src/main/resources/static/img/";
+//	final String UPLOAD_PATH = "C:/java/eclipse-workspace/someus/src/main/resources/static/img/";
 
+	final String UPLOAD_PATH = "/my-app/diaryimg";
+	
 	// 1. 개인 일기 목록 조회
 	@GetMapping("/api/someus/private/page/{memberId}")
 	public ResponseEntity<Map<String, Object>> openPrivateList(@PathVariable("memberId") String memberId)
